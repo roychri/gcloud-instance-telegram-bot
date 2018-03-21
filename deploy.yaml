@@ -1,0 +1,79 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gcloud-instance-tgbot
+  labels:
+    app: gcloud-instance-tgbot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gcloud-instance-tgbot
+    spec:
+      volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: gcloud-key
+      containers:
+        - image: roychri/gcloud-instance-tgbot:latest
+          imagePullPolicy: Always
+          name: bot
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            successThreshold: 2
+            timeoutSeconds: 30
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 30
+            failureThreshold: 2
+          volumeMounts:
+            - mountPath: /var/secrets
+              name: google-cloud-key
+          env:
+            - name: PORT
+              value: "3000"
+            - name: DEBUG
+              value: "*:error,*:debug"
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-auth
+                  key: password
+            - name: INSTANCE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: instance-name
+            - name: INSTANCE_ZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: instance-zone
+            - name: BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: telegram
+                  key: token
+            - name: PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: project-id
+            - name: SERVICE_ACCOUNT_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: service-account-email
+            - name: SERVICE_ACCOUNT_KEY_FILE
+              value: /var/secrets/google

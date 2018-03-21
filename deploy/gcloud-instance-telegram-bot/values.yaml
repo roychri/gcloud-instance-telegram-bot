@@ -1,0 +1,32 @@
+# Default values for gcloud-instance-telegram-bot.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+image:
+  repository: roychri/gcloud-instance-tgbot
+  tag: latest
+  pullPolicy: Always
+telegram:
+  token: "12345"
+app:
+  port: 3000
+  password: ""                  # Make sure you supply a password.
+gce:
+  serviceAccount:
+    email: ""
+    key: ""
+  projectId: "projectid-123"
+  instance:
+    name: "instance-name"
+    zone: "instance-zone"
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi

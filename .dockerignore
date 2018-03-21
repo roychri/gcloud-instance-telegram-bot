@@ -1,0 +1,5 @@
+node_modules
+.git
+gcloud-instance-telegram-bot-*.tgz
+gcloud-key.json
+.last-version

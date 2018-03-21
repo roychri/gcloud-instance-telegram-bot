@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A Helm chart for a telegram bot to control a GCE dev instance
+name: gcloud-instance-telegram-bot
+version: 1.0.0

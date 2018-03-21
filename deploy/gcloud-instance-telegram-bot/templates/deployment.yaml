@@ -1,0 +1,79 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "gcloud-instance-telegram-bot.fullname" . }}
+  labels:
+    app: {{ template "gcloud-instance-telegram-bot.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "gcloud-instance-telegram-bot.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: {{ template "gcloud-instance-telegram-bot.fullname" . }}-gcloud-key
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.app.port }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.app.port }}
+          volumeMounts:
+            - mountPath: /var/secrets
+              name: google-cloud-key
+          env:
+            - name: DEBUG
+              value: "*:error,*:debug"
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "gcloud-instance-telegram-bot.fullname" . }}-app-auth
+                  key: password
+            - name: PORT
+              value: "{{ .Values.app.port }}"
+            - name: INSTANCE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "gcloud-instance-telegram-bot.fullname" . }}-app-config
+                  key: instance-name
+            - name: INSTANCE_ZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "gcloud-instance-telegram-bot.fullname" . }}-app-config
+                  key: instance-zone
+            - name: BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "gcloud-instance-telegram-bot.fullname" . }}-telegram
+                  key: token
+            - name: PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "gcloud-instance-telegram-bot.fullname" . }}-app-config
+                  key: project-id
+            - name: SERVICE_ACCOUNT_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "gcloud-instance-telegram-bot.fullname" . }}-app-config
+                  key: service-account-email
+            - name: SERVICE_ACCOUNT_KEY_FILE
+              value: /var/secrets/google
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}

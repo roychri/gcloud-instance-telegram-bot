@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gcloud-instance-telegram-bot.fullname" . }}-app-config
+  labels:
+    app: {{ template "gcloud-instance-telegram-bot.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  project-id: {{ .Values.gce.projectId }}
+  instance-name:  {{ .Values.gce.instance.name }}
+  instance-zone:  {{ .Values.gce.instance.zone }}
+  service-account-email: {{ .Values.gce.serviceAccount.email }}
